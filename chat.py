@@ -7,17 +7,34 @@ st.set_page_config(page_title="Dispute Tech Buddy")
 
 with st.sidebar:
     st.title(":orange[***Dispute***] :blue[**Tech Buddy**]")
-    if ("EMAIL" in st.secrets) and ("PASS" in st.secrets):
+    hf_username=""
+    hf_pass=""
+    hf_dbname=""
+    if ("username" in st.secrets) and ("password" in st.secrets) and ("database" in st.secrets):
         st.success("Database Login credentials already provided!", icon=None)
-        hf_email = st.secrets["EMAIL"]
-        hf_pass = st.secrets["PASS"]
+        hf_username = st.secrets["username"]
+        hf_pass = st.secrets["password"]
+        hf_dbname = st.secrets["database"]
     else:
-        hf_email = st.text_input("Enter E-mail:", type="password")
-        hf_pass = st.text_input("Enter password:", type="password")
-        if not (hf_email and hf_pass):
-            st.warning("Please enter your credentials!")
-        else:
-            st.success("Proceed to entering your prompt message!", icon=None)
+        hf_username = st.text_input("Enter DB Username:", type="default")
+        hf_pass = st.text_input("Enter DB Password:", type="password")
+        hf_dbname = st.text_input("Enter DB Name:", type="default")
+
+    if not (hf_username and hf_pass and hf_dbname):
+        st.warning("Please enter your DB credentials!")
+    else:
+        # Initialize connection.
+        #conn = st.connection('mysql', type='sql')
+        conn = st.connection(name="sa", dialect = "mysql", host = "localhost", port = 3306, database = hf_dbname, username = hf_username, password = hf_pass, type='sql')
+
+        # Perform query.
+        df = conn.query('SELECT * from beneficiary;', ttl=600)
+
+        # Print results.
+        for row in df.itertuples():
+            st.write(f"{row.first_name} has a :{row.last_name}:")
+		
+        st.success("Proceed to entering your prompt message!"+hf_username+hf_pass+hf_dbname, icon=None)
     st.markdown(
         "?? Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-an-llm-powered-chatbot-with-streamlit/)!"
     )
@@ -56,7 +73,7 @@ def reset_button():
 
 
 # User-provided prompt
-if prompt := st.chat_input(disabled=not (hf_email and hf_pass)):
+if prompt := st.chat_input(disabled=not (hf_username and hf_pass and hf_dbname)):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)

@@ -40,3 +40,6 @@ Q & A with multiple pdf App is a Python application that allows users to upload 
    
    pip install hugchat==0.1.0
    pip install streamlit==1.30.0
+   # requirements.txt
+mysqlclient==x.x.x
+SQLAlchemy==x.x.x
